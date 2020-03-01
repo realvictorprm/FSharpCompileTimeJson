@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Model.fs" />
+    <Compile Include="Generated.fs">
+      <MyriadFile>Model.fs</MyriadFile>
+      <MyriadNameSpace>Test</MyriadNameSpace>
+    </Compile>
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Myriad.Sdk" Version="0.2.4" PrivateAssets="All" />
+    <PackageReference Include="Myriad.Core" Version="0.2.4" PrivateAssets="All" />
+    <PackageReference Include="FSharp.Core" Version="4.7.0.0" />
+    <ProjectReference Include="..\JsonPlugin\JsonPlugin.fsproj"  PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MyriadSdkGenerator Include="$(MSBuildThisFileDirectory)/../JsonPlugin/bin/$(Configuration)/netstandard2.1/JsonPlugin.dll" />
+  </ItemGroup>
+
+</Project>

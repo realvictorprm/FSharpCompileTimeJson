@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Types.fs" />
+    <Compile Include="Library.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Myriad.Core" Version="0.2.4" />
+    <PackageReference Include="FSharp.Core" Version="4.5.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build.props">
+      <Pack>true</Pack>
+      <PackagePath>%(Identity)</PackagePath>
+      <Visible>true</Visible>
+    </Content>
+  </ItemGroup>
+</Project>
