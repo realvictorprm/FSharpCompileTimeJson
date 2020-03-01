@@ -174,7 +174,7 @@ type Example1Gen() =
             Ident.Create "number"
             |> SynExpr.CreateIdent
             |> mkUncurriedSimpleExprCall (LongIdentWithDots.CreateString "decimal")
-            |> mkUncurriedSimpleExprCall (LongIdentWithDots.CreateString "Types.JsonValue.Number")
+            |> mkUncurriedSimpleExprCall (LongIdentWithDots.CreateString "JsonValue.Number")
             |> mkSerializeMemberBinding "number" typeName
             |> mkFullMemberFromBinding)
 
@@ -183,7 +183,7 @@ type Example1Gen() =
         let typ = "string"
         Ident.Create name
         |> SynExpr.CreateIdent
-        |> mkUncurriedSimpleExprCall (LongIdentWithDots.CreateString "Types.JsonValue.String")
+        |> mkUncurriedSimpleExprCall (LongIdentWithDots.CreateString "JsonValue.String")
         |> mkSerializeMemberBinding name typ
         |> mkFullMemberFromBinding
 
@@ -245,12 +245,12 @@ type Example1Gen() =
                 Range.rangeStartup
             )
         expr
-        |> mkUncurriedSimpleExprCall (LongIdentWithDots.CreateString "Types.JsonValue.Record")
+        |> mkUncurriedSimpleExprCall (LongIdentWithDots.CreateString "JsonValue.Record")
         |> mkSerializeMemberBinding currObjectName currObjectTypeName
         |> mkFullMemberFromBinding
 
     let openJsonPluginNamespace =
-        LongIdentWithDots.CreateString "JsonPlugin"
+        LongIdentWithDots.CreateString "JsonPlugin.Types"
         |> SynModuleDecl.CreateOpen
 
     interface IMyriadGenerator with

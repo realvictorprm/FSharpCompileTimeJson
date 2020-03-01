@@ -1,6 +1,6 @@
 ﻿module Model
 
-[<JsonPlugin.CompileTimeJsonEncoding>]
+[<JsonPlugin.CompileTimeJsonEncoding()>]
 type SomeRecord =
     { foo: int
       bar: string

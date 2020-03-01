@@ -7,28 +7,28 @@ namespace rec Test
 
 namespace Test
 
-open JsonPlugin
+open JsonPlugin.Types
 
 type Serializer =
-    static member inline public Serialize(str : string) = Types.JsonValue.String(str)
-    static member inline public Serialize(number : int16) = Types.JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : int32) = Types.JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : int64) = Types.JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : uint16) = Types.JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : uint32) = Types.JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : uint64) = Types.JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : float) = Types.JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : float32) = Types.JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : byte) = Types.JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : sbyte) = Types.JsonValue.Number(decimal (number))
+    static member inline public Serialize(str : string) = JsonValue.String(str)
+    static member inline public Serialize(number : int16) = JsonValue.Number(decimal (number))
+    static member inline public Serialize(number : int32) = JsonValue.Number(decimal (number))
+    static member inline public Serialize(number : int64) = JsonValue.Number(decimal (number))
+    static member inline public Serialize(number : uint16) = JsonValue.Number(decimal (number))
+    static member inline public Serialize(number : uint32) = JsonValue.Number(decimal (number))
+    static member inline public Serialize(number : uint64) = JsonValue.Number(decimal (number))
+    static member inline public Serialize(number : float) = JsonValue.Number(decimal (number))
+    static member inline public Serialize(number : float32) = JsonValue.Number(decimal (number))
+    static member inline public Serialize(number : byte) = JsonValue.Number(decimal (number))
+    static member inline public Serialize(number : sbyte) = JsonValue.Number(decimal (number))
 
     static member inline public Serialize(theObject : Model.SomeRecord) =
-        Types.JsonValue.Record([| "foo", Serializer.Serialize(theObject.foo)
-                                  "bar", Serializer.Serialize(theObject.bar)
-                                  "spam", Serializer.Serialize(theObject.spam) |])
+        JsonValue.Record([| "foo", Serializer.Serialize(theObject.foo)
+                            "bar", Serializer.Serialize(theObject.bar)
+                            "spam", Serializer.Serialize(theObject.spam) |])
 
     static member inline public Serialize(theObject : Model.SomeRecord2) =
-        Types.JsonValue.Record([| "foo", Serializer.Serialize(theObject.foo) |])
+        JsonValue.Record([| "foo", Serializer.Serialize(theObject.foo) |])
     static member inline public Serialize(theObject : Model.SomeRecord3) =
-        Types.JsonValue.Record([| "foo", Serializer.Serialize(theObject.foo)
-                                  "bar", Serializer.Serialize(theObject.bar) |])
+        JsonValue.Record([| "foo", Serializer.Serialize(theObject.foo)
+                            "bar", Serializer.Serialize(theObject.bar) |])
