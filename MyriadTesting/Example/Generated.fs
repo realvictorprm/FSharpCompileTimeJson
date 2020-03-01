@@ -9,34 +9,38 @@ namespace Test
 
 open JsonPlugin.Types
 
-type Serializer =
-    static member inline public Serialize(str : string) = JsonValue.String(str)
-    static member inline public Serialize(number : int16) = JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : int32) = JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : int64) = JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : uint16) = JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : uint32) = JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : uint64) = JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : float) = JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : float32) = JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : byte) = JsonValue.Number(decimal (number))
-    static member inline public Serialize(number : sbyte) = JsonValue.Number(decimal (number))
+type Encoder =
+    static member inline Encode(str : string) = JsonValue.String(str)
+    static member inline Encode(value : bool) = JsonValue.Boolean(value)
+    static member inline Encode(list : #array<'a>) =
+        JsonValue.Array(Seq.toArray (list |> Seq.map (fun element -> Encoder.Encode element)))
+    static member inline Encode(number : int16) = JsonValue.Number(decimal (number))
+    static member inline Encode(number : int32) = JsonValue.Number(decimal (number))
+    static member inline Encode(number : int64) = JsonValue.Number(decimal (number))
+    static member inline Encode(number : uint16) = JsonValue.Number(decimal (number))
+    static member inline Encode(number : uint32) = JsonValue.Number(decimal (number))
+    static member inline Encode(number : uint64) = JsonValue.Number(decimal (number))
+    static member inline Encode(number : float) = JsonValue.Number(decimal (number))
+    static member inline Encode(number : float32) = JsonValue.Number(decimal (number))
+    static member inline Encode(number : byte) = JsonValue.Number(decimal (number))
+    static member inline Encode(number : sbyte) = JsonValue.Number(decimal (number))
 
-    static member inline public Serialize(somerecord : Model.SomeRecord) =
-        JsonValue.Record([| "foo", Serializer.Serialize(somerecord.foo)
-                            "bar", Serializer.Serialize(somerecord.bar)
-                            "spam", Serializer.Serialize(somerecord.spam) |])
+    static member inline Encode(somerecord : Model.SomeRecord) =
+        JsonValue.Record([| "foo", Encoder.Encode(somerecord.foo)
+                            "bar", Encoder.Encode(somerecord.bar)
+                            "spam", Encoder.Encode(somerecord.spam) |])
 
-    static member inline public Serialize(somerecord2 : Model.SomeRecord2) =
-        JsonValue.Record([| "foo", Serializer.Serialize(somerecord2.foo) |])
+    static member inline Encode(somerecord2 : Model.SomeRecord2) =
+        JsonValue.Record([| "foo", Encoder.Encode(somerecord2.foo) |])
 
-    static member inline public Serialize(somerecord3 : Model.SomeRecord3) =
-        JsonValue.Record([| "foo", Serializer.Serialize(somerecord3.foo)
-                            "bar", Serializer.Serialize(somerecord3.bar) |])
+    static member inline Encode(somerecord3 : Model.SomeRecord3) =
+        JsonValue.Record([| "foo", Encoder.Encode(somerecord3.foo)
+                            "bar", Encoder.Encode(somerecord3.bar) |])
 
-    static member inline public Serialize(someunion : Model.SomeUnion) =
+    static member inline Encode(someunion : Model.SomeUnion) =
         JsonValue.Record [| match someunion with
-                            | Model.SomeUnion.CaseA a -> "CaseA", JsonValue.Record([| "a", Serializer.Serialize(a) |])
+                            | Model.SomeUnion.CaseA a -> "CaseA", JsonValue.Record([| "a", Encoder.Encode(a) |])
                             | Model.SomeUnion.CaseB value ->
-                                "CaseB", JsonValue.Record([| "value", Serializer.Serialize(value) |])
-                            | Model.SomeUnion.CaseC _ -> "CaseC", JsonValue.Record([||]) |]
+                                "CaseB", JsonValue.Record([| "value", Encoder.Encode(value) |])
+                            | Model.SomeUnion.CaseC b -> "CaseC", JsonValue.Record([| "b", Encoder.Encode(b) |])
+                            | Model.SomeUnion.CaseE _ -> "CaseE", JsonValue.Record([||]) |]

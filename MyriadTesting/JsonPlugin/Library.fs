@@ -55,8 +55,8 @@ type Example1Gen() =
                         |> SynExpr.CreateTuple
                 )
         )
-    let mkSerializer members =
-        SynModuleDecl.CreateType([Ident.Create "Serializer"] |> SynComponentInfoRcd.Create, members)
+    let mkEncoder members =
+        SynModuleDecl.CreateType([Ident.Create "Encoder"] |> SynComponentInfoRcd.Create, members)
     //let mkMemberBinding name parameters expr =
     //    SynBinding.Binding(
     //        SynAccess.Public |> Some,
@@ -98,9 +98,9 @@ type Example1Gen() =
     //        Range.rangeStartup,
     //        NoSequencePointAtInvisibleBinding
     //    )
-    let mkSerializeMemberBinding paramName typ expr =
+    let mkEncodeMemberBindingSpecialType paramName typ expr =
         SynBinding.Binding(
-            SynAccess.Public |> Some,
+            None,
             SynBindingKind.NormalBinding,
             yes,
             no,
@@ -117,7 +117,48 @@ type Example1Gen() =
                      SynArgInfo ([],false,None)),
                 None),
             SynPat.LongIdent(
-                LongIdentWithDots.CreateString "Serialize",
+                LongIdentWithDots.CreateString "Encode",
+                None, None,
+                SynConstructorArgs.Pats([
+                    SynPat.Paren(
+                        SynPat.Typed(
+                            SynPat.Named(
+                                SynPat.Wild(Range.rangeStartup),
+                                Ident.Create paramName, false, None, Range.rangeStartup
+                            ),
+                            typ,
+                            Range.rangeStartup
+                        ),
+                        Range.rangeStartup
+                    )
+                ]),
+                None, Range.rangeStartup
+            ),
+            None,
+            expr,
+            Range.rangeStartup,
+            NoSequencePointAtInvisibleBinding
+        )
+    let mkEncodeMemberBinding paramName typ expr =
+        SynBinding.Binding(
+            None,
+            SynBindingKind.NormalBinding,
+            yes,
+            no,
+            [],
+            PreXmlDoc.Empty,
+            SynValData(Some {
+                IsInstance = false
+                IsDispatchSlot = false
+                IsOverrideOrExplicitImpl = false
+                IsFinal = false
+                MemberKind = MemberKind.Member },
+                SynValInfo(
+                    [[SynArgInfo ([],false, Ident.Create paramName |> Some)]],
+                     SynArgInfo ([],false,None)),
+                None),
+            SynPat.LongIdent(
+                LongIdentWithDots.CreateString "Encode",
                 None, None,
                 SynConstructorArgs.Pats([
                     SynPat.Paren(
@@ -139,6 +180,7 @@ type Example1Gen() =
             Range.rangeStartup,
             NoSequencePointAtInvisibleBinding
         )
+
     let mkFullMemberFromBinding binding = SynMemberDefn.Member(binding, Range.rangeStartup)
     
     let primitiveTypesDeserialization =
@@ -157,10 +199,10 @@ type Example1Gen() =
         }
         |> Seq.map(fun (typeName, expr) ->
             expr
-            |> mkSerializeMemberBinding "number" typeName
+            |> mkEncodeMemberBinding "number" typeName
             |> mkFullMemberFromBinding)
 
-    let primitiveTypesSerialization =
+    let primitiveTypesEncoding =
         let callToString = mkUncurriedSimpleCall (LongIdentWithDots.CreateString "number.ToString") []
         seq {
             "int16"
@@ -179,23 +221,100 @@ type Example1Gen() =
             |> SynExpr.CreateIdent
             |> mkUncurriedSimpleExprCall (LongIdentWithDots.CreateString "decimal")
             |> mkUncurriedSimpleExprCall (LongIdentWithDots.CreateString "JsonValue.Number")
-            |> mkSerializeMemberBinding "number" typeName
+            |> mkEncodeMemberBinding "number" typeName
             |> mkFullMemberFromBinding)
 
-    let stringSerializer =
+    let stringEncoder =
         let name = "str"
         let typ = "string"
         Ident.Create name
         |> SynExpr.CreateIdent
         |> mkUncurriedSimpleExprCall (LongIdentWithDots.CreateString "JsonValue.String")
-        |> mkSerializeMemberBinding name typ
+        |> mkEncodeMemberBinding name typ
         |> mkFullMemberFromBinding
 
-    let defaultSerializers =
-        primitiveTypesSerialization
-        |> Seq.append [stringSerializer]
+    let arrayEncoder =
+        let name = "list"
+        let typ =
+            SynType.HashConstraint(
+                SynType.App(
+                    SynType.CreateLongIdent "array",
+                    None,
+                    [SynType.Var(
+                        SynTypar.Typar(Ident.Create "a", TyparStaticReq.NoStaticReq, false),
+                        Range.rangeStartup
+                    )],
+                    [],
+                    None,
+                    false,
+                    Range.rangeStartup
+                ),
+                Range.rangeStartup
+            )
+            // "#seq<'a>"
+        let expr =
+            SynExpr.App
+                (ExprAtomicFlag.NonAtomic,false,
+                 SynExpr.App
+                   (ExprAtomicFlag.NonAtomic,true, SynExpr.CreateIdentString "op_PipeRight", SynExpr.CreateIdentString "list",
+                    Range.rangeStartup),
+                 SynExpr.App
+                   (ExprAtomicFlag.Atomic,false,
+                    SynExpr.LongIdent
+                      (false,
+                       LongIdentWithDots
+                         ([Ident.Create "Seq"; Ident.Create "map" ],[Range.rangeStartup]),
+                       None,Range.rangeStartup),
+                    SynExpr.Paren
+                      (SynExpr.Lambda
+                         (false,false,
+                          SynSimplePats.SimplePats
+                            ([SynSimplePat.Id
+                                (Ident.Create "element",None,false,false,false,
+                                 Range.rangeStartup)],
+                             Range.rangeStartup),
+                          SynExpr.App
+                            (ExprAtomicFlag.NonAtomic,false,
+                             SynExpr.LongIdent
+                               (false,
+                                LongIdentWithDots
+                                  ([Ident.Create "Encoder"; Ident.Create "Encode" ],
+                                   [Range.rangeStartup]),
+                                None,Range.rangeStartup),
+                             SynExpr.CreateIdentString "element",
+                             Range.rangeStartup),
+                          Range.rangeStartup),
+                       Range.rangeStartup,
+                       Some Range.rangeStartup,
+                       Range.rangeStartup),
+                    Range.rangeStartup),
+                 Range.rangeStartup)
+        
+        expr
+        |> mkUncurriedSimpleExprCall (LongIdentWithDots.CreateString "Seq.toArray")
+        |> mkUncurriedSimpleExprCall (LongIdentWithDots.CreateString "JsonValue.Array")
+        |> mkEncodeMemberBindingSpecialType name typ
+        |> mkFullMemberFromBinding
 
-    let mkSerializeMemberBindingFromRecordField (moduleIdent: LongIdent) typeIdent recordFields =
+
+    let boolEncoder =
+        let name = "value"
+        let typ = "bool"
+        Ident.Create name
+        |> SynExpr.CreateIdent
+        |> mkUncurriedSimpleExprCall (LongIdentWithDots.CreateString "JsonValue.Boolean")
+        |> mkEncodeMemberBinding name typ
+        |> mkFullMemberFromBinding
+
+    let defaultEncoders =
+        primitiveTypesEncoding
+        |> Seq.append [
+            stringEncoder
+            boolEncoder
+            arrayEncoder
+        ]
+
+    let mkEncodeMemberBindingFromRecordField (moduleIdent: LongIdent) typeIdent recordFields =
         let currObjectTypeName = typeIdent |> List.append moduleIdent |> List.map(fun ident -> ident.idText) |> String.concat "."
         let currObjectName = typeIdent |> List.last |> (fun last -> last.idText.ToLower())
         let fields =
@@ -209,7 +328,7 @@ type Example1Gen() =
                         | _ -> ()
             }
         let expr =
-            let fieldSerializers =
+            let fieldEncoders =
                 [| for (fieldName, _) in fields ->
                     SynExpr.Tuple([
                         SynConst.CreateString fieldName
@@ -217,7 +336,7 @@ type Example1Gen() =
                         SynExpr.CreateApp(
                             SynExpr.CreateLongIdent(
                                 false,
-                                LongIdentWithDots.CreateString "Serializer.Serialize",
+                                LongIdentWithDots.CreateString "Encoder.Encode",
                                 None
                             ),
                             SynExpr.CreateParen(
@@ -242,17 +361,17 @@ type Example1Gen() =
                 SynExpr.CompExpr(
                     true,
                     ref true,
-                    fieldSerializers,
+                    fieldEncoders,
                     Range.rangeStartup
                 ),
                 Range.rangeStartup
             )
         expr
         |> mkUncurriedSimpleExprCall (LongIdentWithDots.CreateString "JsonValue.Record")
-        |> mkSerializeMemberBinding currObjectName currObjectTypeName
+        |> mkEncodeMemberBinding currObjectName currObjectTypeName
         |> mkFullMemberFromBinding
 
-    let mkSerializeMemberBindingFromUnionDecl (moduleIdent: LongIdent) typeIdent  (cases: SynUnionCases) =
+    let mkEncodeMemberBindingFromUnionDecl (moduleIdent: LongIdent) typeIdent  (cases: SynUnionCases) =
         let currObjectTypeName = typeIdent |> List.append moduleIdent |> List.map(fun ident -> ident.idText) |> String.concat "."
         let currObjectName = typeIdent |> List.last |> (fun last -> last.idText.ToLower())
         let caseEncoders =
@@ -278,7 +397,7 @@ type Example1Gen() =
                     match fields with
                     | [] -> SynExpr.ArrayOrList(true, [], Range.rangeStartup)
                     | _ ->
-                        let fieldSerializers =
+                        let fieldEncoders =
                             [| for field in fields ->
                                 let fieldName = field.ToRcd.Id |> Option.get in
                                 SynExpr.Tuple([
@@ -286,7 +405,7 @@ type Example1Gen() =
                                     SynExpr.CreateApp(
                                         SynExpr.CreateLongIdent(
                                             false,
-                                            LongIdentWithDots.CreateString "Serializer.Serialize",
+                                            LongIdentWithDots.CreateString "Encoder.Encode",
                                             None
                                         ),
                                         SynExpr.CreateParen(
@@ -311,7 +430,7 @@ type Example1Gen() =
                             SynExpr.CompExpr(
                                 true,
                                 ref true,
-                                fieldSerializers,
+                                fieldEncoders,
                                 Range.rangeStartup
                             ),
                             Range.rangeStartup
@@ -367,7 +486,7 @@ type Example1Gen() =
                 ),
             Range.rangeStartup
             )
-        |> mkSerializeMemberBinding currObjectName currObjectTypeName
+        |> mkEncodeMemberBinding currObjectName currObjectTypeName
         |> mkFullMemberFromBinding
 
     let openJsonPluginNamespace =
@@ -405,12 +524,12 @@ type Example1Gen() =
                 relevantDecls
                 |> Seq.map(function
                      | WhatIsThat.ItsAnRecord(moduleIdent, typeIdent, recordFields) ->
-                        mkSerializeMemberBindingFromRecordField  moduleIdent typeIdent recordFields
+                        mkEncodeMemberBindingFromRecordField  moduleIdent typeIdent recordFields
                      | WhatIsThat.ItsAnUnion(moduleIdent, typeIdent, cases) ->
-                        mkSerializeMemberBindingFromUnionDecl moduleIdent typeIdent cases
+                        mkEncodeMemberBindingFromUnionDecl moduleIdent typeIdent cases
                 )
-                |> Seq.append defaultSerializers
-                |> Seq.toList |> mkSerializer
+                |> Seq.append defaultEncoders
+                |> Seq.toList |> mkEncoder
 
             let namespaceOrModule =
                 { SynModuleOrNamespaceRcd.CreateNamespace(Ident.CreateLong namespace')

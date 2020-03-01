@@ -19,4 +19,6 @@ type SomeRecord3 =
 type SomeUnion =
     | CaseA of a: int
     | CaseB of value: SomeRecord
-    | CaseC
+    | CaseC of b: bool
+    //| CaseD of arr: bool array
+    | CaseE

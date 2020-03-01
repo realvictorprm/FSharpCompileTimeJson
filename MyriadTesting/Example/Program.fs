@@ -3,6 +3,13 @@
 open System
 open Model
 
+(*
+static member inline Encode(list : #array< ^c>) =
+    let inline call2 (a: ^a, b: ^b) = ((^a or ^b or ^c) : (static member Encode: ^b -> JsonValue)(b))
+    [| for element in list -> call2 (Unchecked.defaultof<Encoder>, element) |]
+    |> JsonValue.Array
+*)
+
 open JsonPlugin.Types
 
 let rec jsonToString json =
@@ -16,7 +23,7 @@ let rec jsonToString json =
     | JsonValue.String str -> sprintf "%A" str
     | JsonValue.Null -> "null"
     | JsonValue.Boolean b -> sprintf "%A" b
-    | JsonValue.Float f -> sprintf "%f" f
+    //| JsonValue.Array arr -> ""
 
 [<EntryPoint>]
 let main argv =
@@ -24,11 +31,11 @@ let main argv =
     { foo = 1
       bar = ""
       spam = 2. }
-    |> Test.Serializer.Serialize
+    |> Test.Encoder.Encode
     |> jsonToString
     |> printfn "%s"
     SomeUnion.CaseA 10
-    |> Test.Serializer.Serialize
+    |> Test.Encoder.Encode
     |> jsonToString
     |> printfn "%s"
     Console.ReadKey() |> ignore
