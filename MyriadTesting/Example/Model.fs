@@ -14,8 +14,9 @@ type SomeRecord2 =
 type SomeRecord3 =
     { foo: SomeRecord
       bar: SomeRecord2 }
-
+      
+[<JsonPlugin.CompileTimeJsonEncoding>]
 type SomeUnion =
-    | CaseA of a:int
+    | CaseA of a: int
     | CaseB of value: SomeRecord
     | CaseC

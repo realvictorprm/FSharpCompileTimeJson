@@ -22,13 +22,21 @@ type Serializer =
     static member inline public Serialize(number : byte) = JsonValue.Number(decimal (number))
     static member inline public Serialize(number : sbyte) = JsonValue.Number(decimal (number))
 
-    static member inline public Serialize(theObject : Model.SomeRecord) =
-        JsonValue.Record([| "foo", Serializer.Serialize(theObject.foo)
-                            "bar", Serializer.Serialize(theObject.bar)
-                            "spam", Serializer.Serialize(theObject.spam) |])
+    static member inline public Serialize(somerecord : Model.SomeRecord) =
+        JsonValue.Record([| "foo", Serializer.Serialize(somerecord.foo)
+                            "bar", Serializer.Serialize(somerecord.bar)
+                            "spam", Serializer.Serialize(somerecord.spam) |])
 
-    static member inline public Serialize(theObject : Model.SomeRecord2) =
-        JsonValue.Record([| "foo", Serializer.Serialize(theObject.foo) |])
-    static member inline public Serialize(theObject : Model.SomeRecord3) =
-        JsonValue.Record([| "foo", Serializer.Serialize(theObject.foo)
-                            "bar", Serializer.Serialize(theObject.bar) |])
+    static member inline public Serialize(somerecord2 : Model.SomeRecord2) =
+        JsonValue.Record([| "foo", Serializer.Serialize(somerecord2.foo) |])
+
+    static member inline public Serialize(somerecord3 : Model.SomeRecord3) =
+        JsonValue.Record([| "foo", Serializer.Serialize(somerecord3.foo)
+                            "bar", Serializer.Serialize(somerecord3.bar) |])
+
+    static member inline public Serialize(someunion : Model.SomeUnion) =
+        JsonValue.Record [| match someunion with
+                            | Model.SomeUnion.CaseA a -> "CaseA", JsonValue.Record([| "a", Serializer.Serialize(a) |])
+                            | Model.SomeUnion.CaseB value ->
+                                "CaseB", JsonValue.Record([| "value", Serializer.Serialize(value) |])
+                            | Model.SomeUnion.CaseC _ -> "CaseC", JsonValue.Record([||]) |]
